@@ -1,0 +1,3 @@
+ls ;  pwd
+   ls -al     ; pwd; ps
+whoami ; ls | grep "m" | grep ".c" > record.txt ;    open record.txt
