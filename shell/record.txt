@@ -1,0 +1,168 @@
+TEST 10: bad stdout output
+** Expected:
+This verifies one of the assumptions of this project, that your shell checks for a line of length 256 characters. Let's see whether your programs holds this basic assumption. What I do after this is to check the length of this line. Opoos! it would be over 256 characters. Go Go Go.
+cal
+     April 2019       
+Su Mo Tu We Th Fr Sa  
+    1  2  3  4  5  6  
+ 7  8  9 10 11 12 13  
+14 15 16 17 18 19 20  
+21 22 23 24 25 26 27  
+28 29 30              
+                      
+** Got:
+This verifies one of the assumptions of this project, that your shell checks for a line of length 256 characters. Let's see whether your programs holds this basic assumption. What I do after this is to check the length of this line. Opoos! it would be over 256 characters. Go Go Go.
+cal
+     April 2019       
+Su Mo Tu We Th Fr Sa  
+    1  2  3  4  5  6  
+ 7  8  9 10 11 12 13  
+14 15 16 17 18 19 20  
+21 22 23 24 25 26 27  
+28 29 30              
+                      
+** Diff file (which should be empty) instead contains:
+Binary files /tmp/tmp.8GpveSPH4t.out and ./results/10.out differ
+
+TEST 10: bad stderr output
+** Expected:
+An error has occurred
+** Got:
+An error has occurred
+An error has occurred
+** Diff file (which should be empty) instead contains:
+2d1
+< An error has occurred
+
+TEST 10: FAILED
+
+TEST 11: bad stdout output
+** Expected:
+ls        -la        /bin   
+total 17544
+drwxr-xr-x  2 root root    4096 Mar 13 09:30 .
+drwxr-xr-x 26 root root    4096 Apr 24 10:47 ..
+-rwxr-xr-x  1 root root 1037528 May 16  2017 bash
+-rwxr-xr-x  1 root root  520992 Jun 15  2017 btrfs
+-rwxr-xr-x  1 root root  249464 Jun 15  2017 btrfs-calc-size
+lrwxrwxrwx  1 root root       5 Jun 15  2017 btrfsck -> btrfs
+-rwxr-xr-x  1 root root  278376 Jun 15  2017 btrfs-convert
+-rwxr-xr-x  1 root root  249464 Jun 15  2017 btrfs-debug-tree
+** Got:
+ls        -la        /bin   
+total 17544
+drwxr-xr-x  2 root root    4096 Mar 13 09:30 .
+drwxr-xr-x 26 root root    4096 Apr 24 10:47 ..
+-rwxr-xr-x  1 root root 1037528 May 16  2017 bash
+-rwxr-xr-x  1 root root  520992 Jun 15  2017 btrfs
+-rwxr-xr-x  1 root root  249464 Jun 15  2017 btrfs-calc-size
+lrwxrwxrwx  1 root root       5 Jun 15  2017 btrfsck -> btrfs
+-rwxr-xr-x  1 root root  278376 Jun 15  2017 btrfs-convert
+-rwxr-xr-x  1 root root  249464 Jun 15  2017 btrfs-debug-tree
+** Diff file (which should be empty) instead contains:
+169a170
+> /home/wenyuqi/test
+179d179
+< /home/wenyuqi/test
+
+TEST 11: FAILED
+
+TEST 15: bad stdout output
+** Expected:
+    cat run-tests.csh  	; pwd	;	who
+#! /bin/csh -f
+
+set resultDir = ./results
+
+# set this to correct folder
+set scriptDir = ./scripts
+
+if ($#argv == 1) then
+    set list = $argv
+** Got:
+    cat run-tests.csh  	; pwd	;	who
+#! /bin/csh -f
+
+set resultDir = ./results
+
+# set this to correct folder
+set scriptDir = ./scripts
+
+if ($#argv == 1) then
+    set list = $argv
+** Diff file (which should be empty) instead contains:
+119a120
+> /home/wenyuqi/test
+209d209
+< /home/wenyuqi/test
+
+TEST 15: FAILED
+
+TEST 16: bad stdout output
+** Expected:
+cat run-tests.csh  ;;; pwd ;;; who;;;
+#! /bin/csh -f
+
+set resultDir = ./results
+
+# set this to correct folder
+set scriptDir = ./scripts
+
+if ($#argv == 1) then
+    set list = $argv
+** Got:
+cat run-tests.csh  ;;; pwd ;;; who;;;
+#! /bin/csh -f
+
+set resultDir = ./results
+
+# set this to correct folder
+set scriptDir = ./scripts
+
+if ($#argv == 1) then
+    set list = $argv
+** Diff file (which should be empty) instead contains:
+119a120
+> /home/wenyuqi/test
+209d209
+< /home/wenyuqi/test
+
+TEST 19: bad stderr output
+** Expected:
+** Got:
+para: Command not found.
+para: Command not found.
+para: Command not found.
+An error has occurred
+An error has occurred
+An error has occurred
+** Diff file (which should be empty) instead contains:
+1,6d0
+< para: Command not found.
+< para: Command not found.
+< para: Command not found.
+< An error has occurred
+< An error has occurred
+< An error has occurred
+
+TEST 19: FAILED
+
+TEST 29: Bad redirection output (or not found)
+** Expected:
+** Got:
+./results/fileout is not created
+TEST 29: bad stderr output
+** Expected:
+** Got:
+para: Command not found.
+para: Command not found.
+An error has occurred
+An error has occurred
+** Diff file (which should be empty) instead contains:
+1,4d0
+< para: Command not found.
+< para: Command not found.
+< An error has occurred
+< An error has occurred
+
+TEST 29: FAILED
