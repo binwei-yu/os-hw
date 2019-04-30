@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <pwd.h>
+#include <sys/wait.h>
 
 
 int parse(char* cmd, char* delimeter, char** instructions);
@@ -22,6 +23,8 @@ void error(void);
 
 const char header[10] = "520sh> ";
 const char error_message[30] = "An error has occurred\n";
+
+FILE* file = NULL;
 
 int main(int argc, char* argv[]) {
     // Interactive mode
@@ -60,6 +63,7 @@ int main(int argc, char* argv[]) {
                     memset(cmd, 0x00, (MAX_BUFFER_SIZE+2) * sizeof(char));
                 }
             }
+            fclose(bash_file);
         }
     }
         // Launch erroneously
@@ -118,6 +122,8 @@ void prl_exe(char* cmd) {
     int cnt = parse(cmd, "+", cmds);
     for(int i = 0; i < cnt; i++) {
         execute(cmds[i], PRL_MODE);
+    }
+    for(int i = 0; i < cnt; i++) {
         wait(NULL);
     }
 }
@@ -225,17 +231,21 @@ void execute(char* cmd, int mode) {
                 if (argc > 1) {
                     error();
                 } else {
-                    printf("%s\n", getcwd(NULL, 0));
+                    char* pwd = getcwd(NULL, 0);
+                    write(STDOUT_FILENO, pwd, strlen(pwd));
+                    write(STDOUT_FILENO, "\n", 1);
                 }
             }
                 // ECHO
             else if (strcmp(instr, "echo") == 0) {
-                printf("%s\n", argv[1]);
+                write(STDOUT_FILENO, argv[1], strlen(argv[1]));
+                write(STDOUT_FILENO, "\n", 1);
             }
             else {
                 pid_t pid = fork();
                 if (pid == 0) {
                     execvp(argv[0], argv);
+                    if(file) fclose(file);
                     error();
                     exit(0);
                 }
@@ -246,7 +256,7 @@ void execute(char* cmd, int mode) {
             }
         }
     }
-
+    
     // Restore output destination
     dup2(fd_out, STDOUT_FILENO);
 }

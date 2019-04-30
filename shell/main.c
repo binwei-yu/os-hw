@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <pwd.h>
+#include <sys/wait.h>
 
 
 int parse(char* cmd, char* delimeter, char** instructions);
@@ -23,6 +24,8 @@ void error(void);
 const char header[10] = "520sh> ";
 const char error_message[30] = "An error has occurred\n";
 
+FILE* file = NULL;
+
 int main(int argc, char* argv[]) {
     // Interactive mode
     if (argc == 1) {
@@ -40,18 +43,28 @@ int main(int argc, char* argv[]) {
         // Batch mode
     else if (argc == 2) {
         FILE* bash_file = fopen(argv[1], "r");
-        if (bash_file == NULL) error();
+        file = bash_file;
+        if (bash_file == NULL) {
+            error();
+            exit(EXIT_FAILURE);
+        }
         else {
             char cmd[MAX_BUFFER_SIZE + 2];
             memset(cmd, 0x00, (MAX_BUFFER_SIZE+2) * sizeof(char));
             while(fgets(cmd, MAX_BUFFER_SIZE+2, bash_file)) {
                 // Output the command
-                write(STDOUT_FILENO, cmd, strlen(cmd));
-
-                process(cmd);
-
-                memset(cmd, 0x00, (MAX_BUFFER_SIZE+2) * sizeof(char));
+                if (!strchr(cmd, '\n')) {
+                    write(STDOUT_FILENO, cmd, MAX_BUFFER_SIZE + 2);
+                    memset(cmd, 0x00, (MAX_BUFFER_SIZE+2) * sizeof(char));
+                } else {
+                    write(STDOUT_FILENO, cmd, strlen(cmd));
+                    
+                    process(cmd);
+                    
+                    memset(cmd, 0x00, (MAX_BUFFER_SIZE+2) * sizeof(char));
+                }
             }
+            fclose(file);
         }
     }
         // Launch erroneously
@@ -110,6 +123,8 @@ void prl_exe(char* cmd) {
     int cnt = parse(cmd, "+", cmds);
     for(int i = 0; i < cnt; i++) {
         execute(cmds[i], PRL_MODE);
+    }
+    for(int i = 0; i < cnt; i++) {
         wait(NULL);
     }
 }
@@ -185,6 +200,10 @@ void execute(char* cmd, int mode) {
     }
 
     // Pipeline
+    if (strstr(cmd, "||")) {
+        error();
+        return;
+    }
     if (strchr(cmd, '|')) {
         pipe_execute(cmd);
     }
@@ -192,7 +211,7 @@ void execute(char* cmd, int mode) {
     else {
         char* argv[MAX_CMD_NUM];
         memset(argv, 0x00, MAX_CMD_NUM * sizeof(char*));
-        int argc = parse(cmd, " ", argv);
+        int argc = parse(cmd, " \t", argv);
 
         // Skip empty command
         if (argc > 0) {
@@ -210,16 +229,24 @@ void execute(char* cmd, int mode) {
             }
                 // PWD
             else if (strcmp(instr, "pwd") == 0) {
-                printf("%s\n", getcwd(NULL, 0));
+                if (argc > 1) {
+                    error();
+                } else {
+                    char* pwd = getcwd(NULL, 0);
+                    write(STDOUT_FILENO, pwd, strlen(pwd));
+                    write(STDOUT_FILENO, "\n", 1);
+                }
             }
                 // ECHO
             else if (strcmp(instr, "echo") == 0) {
-                printf("%s\n", argv[1]);
+                write(STDOUT_FILENO, argv[1], strlen(argv[1]));
+                write(STDOUT_FILENO, "\n", 1);
             }
             else {
                 pid_t pid = fork();
                 if (pid == 0) {
                     execvp(argv[0], argv);
+                    if(file) fclose(file);
                     error();
                     exit(0);
                 }
@@ -230,7 +257,7 @@ void execute(char* cmd, int mode) {
             }
         }
     }
-
+    
     // Restore output destination
     dup2(fd_out, STDOUT_FILENO);
 }
@@ -257,7 +284,7 @@ int parse(char* cmd, char* delimeter, char** instructions) {
             }
 
             // Eliminate parenthesis
-            while(*ptr == '"' && *end == '"') {
+            while((*ptr == '"' && *end == '"') || (*ptr == '\'' && *end == '\'')) {
                 *ptr = *end = '\0';
                 ptr++; end--;
             }
