@@ -1,6 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define BUSY 1
+#define IDLE 0
+
 typedef unsigned int uint;
 
 static inline uint
@@ -24,7 +27,7 @@ struct spinlock_t {
 };
 
 void spinlock_acquire(spinlock_t* lock) {
-    while(xchg(&lock->value, 1));
+    while(xchg(&lock->value, BUSY));
 }
 
 void spinlock_release(spinlock_t* lock) {

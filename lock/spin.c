@@ -4,6 +4,7 @@
 int i = 0;
 spinlock_t lock;
 
+void sleep();
 void* do_1();
 void* do_2();
 
