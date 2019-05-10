@@ -31,13 +31,13 @@ int Counter_GetValue(counter_t* c) {
 // Increase a given counter by 1.
 void Counter_Increment(counter* c) {
     spinlock_acquire(&lock);
-    c->coun ++;
+    c->count ++;
     spinlock_release(&lock);
 }
 
 // Decrease a given counter by 1.
 void Counter_Increment(counter* c) {
     spinlock_acquire(&lock);
-    c->coun --;
+    c->count --;
     spinlock_release(&lock);
 }
