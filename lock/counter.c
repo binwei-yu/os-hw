@@ -21,6 +21,7 @@ int main() {
     pthread_create(&t2, NULL, count, NULL);
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
-    printf("%d\n", Counter_GetValue(c));
-    printf("%d\n", number);
+    printf("%d\n", Counter_GetValue(c)); // This should be 20,000.
+    printf("%d\n", number); // This should be less than 20,000.
+    Counter_Free(c);
 }
