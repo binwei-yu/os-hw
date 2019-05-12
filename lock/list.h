@@ -1,83 +1,113 @@
-#import "spin.h"
-
-void List_Init(list_t *list);
-void List_Insert(list_t *list, void *element, unsigned int key);
-void List_Delete(list_t *list, unsigned int key);
-void *List_Lookup(list_t *list, unsigned int key);
-
-typedef struct list_t list_t;
-struct list_t {
-    node_t* head;
-    unsigned int length;
-};
+#include "spin.h"
 
 typedef struct node_t node_t;
 struct node_t {
-    unsigned int value;
+    unsigned int key;
+    void* element;
     node_t* next;
     spinlock_t* lock;
 };
+typedef struct list_t list_t;
+struct list_t {
+    spinlock_t* lock;
+    node_t* head;
+};
+
+void List_Init(list_t* list);
+void List_Insert(list_t* list, void *element, unsigned int key);
+void List_Delete(list_t* list, unsigned int key);
+void *List_Lookup(list_t* list, unsigned int key);
+void List_Free(list_t* list);
 
 // Initialize a list. If it already points to a list, delete all the nodes in it.
 void List_Init(list_t* list) {
-    if (list) {
-        node_t* current_node = list->head;
-        while(current_node) {
-            node_t* temp = node->next;
-            free(current_node);
-            current_node = temp;
-        }
-    }
-    else
-        list = (list_t*) malloc(sizeof list_t);
-    list->length = 0;
+    if (!list) return;
+    list->lock = (spinlock_t*) malloc(sizeof (spinlock_t));
+    list->head = NULL;
 }
 
 // Insert the given elemnt to the given list at the given key.
 void List_Insert(list_t *list, void *element, unsigned int key) {
+    node_t* new_node = (node_t*) malloc(sizeof (node_t));
+    new_node->key = key;
+    new_node->element = element;
+    new_node->next = NULL;
+    new_node->lock = (spinlock_t*) malloc(sizeof (spinlock_t));
     
+    spinlock_acquire(list->lock);
+    new_node->next = list->head;
+    list->head = new_node;
+    spinlock_release(list->lock);
 }
 
 // Delete the given list's elemnt at the given key.
 void List_Delete(list_t* list, unsigned int key) {
-    if （!list)
+    if (!list || !list->head) return;
+    spinlock_acquire(list->lock);
+    node_t* previous_node = NULL;
+    node_t* current_node = list->head;
+    printf("%u\n", list->head->key);
+    printf("%u\n", key);
+    if (1) {
+        printf("wocaoi");
+        list->head = list->head->next;
+        free(current_node->lock);
+        free(current_node);
+        spinlock_release(list->lock);
+        
         return;
-    node_t* node = list->head;
-    node_t* prev = NULL;
-// find key-th element in the list.
-    while(key --) {
-        if(!node)
-            return;
-        prev = node;
-        spinlock_t* local_lock = node->lock;
-        spinlock_acquire(local_lock);
-        node = node->next;
-        spinlock_release(local_lock);
     }
-    if (prev) {
-        spinlock_t* curr_lock = node->lock;
-        spinlock_t* prev_lock = prev->lock;
-        spinlock_acquire(curr_lock);
-        spinlock_acquire(prev_lock);
-        prev->next = node->next;
-        spinlock_release(prev_lock);
-        spinlock_release(curr_lock);
-        free(node);
-    } else {
-        free(node);
+    spinlock_release(list->lock);
+    printf("wocao1!\n");
+    spinlock_acquire(current_node->lock);
+    previous_node = current_node;
+    current_node = current_node->next;
+    printf("wocao2!\n");
+    
+    while(current_node) {
+        printf("wocao!\n");
+        spinlock_acquire(current_node->lock);
+        if(current_node->key == key) {
+            previous_node->next = current_node->next;
+            spinlock_release(current_node->lock);
+            spinlock_release(previous_node->lock);
+            free(current_node->lock);
+            free(current_node);
+            
+            return;
+        }
+        else {
+            spinlock_release(previous_node->lock);
+            previous_node = current_node;
+            current_node = current_node->next;
+        }
     }
 }
 
 // Return the key-th element of the given list.s
-void *List_Lookup(list_t *list, unsigned int key) {
-    if (!list)
-        return;
-    node* node = list->head;
-    while(key --) {
-        if (!node)
-            return NULL;
-        // TO DO ********************************
-        spinlock_acquire(&node->lock);
-        node
+void* List_Lookup(list_t *list, unsigned int key) {
+    if (!list) return NULL;
+    spinlock_acquire(list->lock);
+    node_t* current_node = list->head;
+    spinlock_release(list->lock);
+    while(current_node) {
+        spinlock_acquire(current_node->lock);
+        if (current_node->key == key) return current_node->element;
+        spinlock_release(current_node->lock);
+        current_node = current_node->next;
     }
+    return NULL;
+}
+
+void List_Free(list_t* list) {
+    spinlock_acquire(list->lock);
+    node_t* current_node = list->head;
+    while(current_node) {
+        node_t* temp = current_node->next;
+        free(current_node->lock);
+        free(current_node);
+        current_node = temp;
+    }
+    spinlock_release(list->lock);
+    free(list);
 }
