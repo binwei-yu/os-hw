@@ -43,13 +43,11 @@ void List_Insert(list_t *list, void *element, unsigned int key) {
 // Delete the given list's elemnt at the given key.
 void List_Delete(list_t* list, unsigned int key) {
     if (!list || !list->head) return;
+    // If head is a match
     spinlock_acquire(list->lock);
     node_t* previous_node = NULL;
     node_t* current_node = list->head;
-    printf("%u\n", list->head->key);
-    printf("%u\n", key);
-    if (1) {
-        printf("wocaoi");
+    if (current_node->key == key) {
         list->head = list->head->next;
         free(current_node->lock);
         free(current_node);
@@ -58,14 +56,13 @@ void List_Delete(list_t* list, unsigned int key) {
         return;
     }
     spinlock_release(list->lock);
-    printf("wocao1!\n");
+    
+    // Not deleting the head
     spinlock_acquire(current_node->lock);
     previous_node = current_node;
     current_node = current_node->next;
-    printf("wocao2!\n");
     
     while(current_node) {
-        printf("wocao!\n");
         spinlock_acquire(current_node->lock);
         if(current_node->key == key) {
             previous_node->next = current_node->next;
@@ -92,7 +89,10 @@ void* List_Lookup(list_t *list, unsigned int key) {
     spinlock_release(list->lock);
     while(current_node) {
         spinlock_acquire(current_node->lock);
-        if (current_node->key == key) return current_node->element;
+        if (current_node->key == key) {
+            spinlock_release(current_node->lock);
+            return current_node->element;
+        }
         spinlock_release(current_node->lock);
         current_node = current_node->next;
     }
