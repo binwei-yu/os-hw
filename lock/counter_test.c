@@ -20,8 +20,8 @@ int main() {
         c = (counter_t*) malloc(sizeof (counter_t));
         Counter_Init(c, 0);
         pthread_t threads[i];
-        struct  timeval start;
-        struct  timeval end;
+        struct timeval start;
+        struct timeval end;
         unsigned long diff;
         gettimeofday(&start, NULL);
         for (int j = 0; j < i; j ++) {
