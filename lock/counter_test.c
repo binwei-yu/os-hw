@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <sys/time.h>
 #include "counter.h"
 
 #define MAX_COUNT 1000000
@@ -11,6 +12,7 @@ void* count() {
     for(int i = 0; i < MAX_COUNT; i ++) {
         Counter_Increment(c);
     }
+    return 0;
 }
 
 
@@ -25,7 +27,7 @@ int main() {
         unsigned long diff;
         gettimeofday(&start, NULL);
         for (int j = 0; j < i; j ++) {
-            int temp = pthread_create(&threads[j], NULL, count, NULL);
+            pthread_create(&threads[j], NULL, count, NULL);
         }
         for (int j = 0; j < i; j ++) {
             pthread_join(threads[j], NULL);

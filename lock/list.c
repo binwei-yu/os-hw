@@ -100,6 +100,6 @@ void List_Free(list_t* list) {
 
 // Get the length of the given list
 unsigned int List_GetLength(list_t* list) {
-    if (!list) return NULL;
+    if (!list) return 0;
     return list->length;
 }

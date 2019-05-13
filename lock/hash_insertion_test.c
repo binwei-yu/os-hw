@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <sys/time.h>
 #include "hash.h"
 
 #define MAX_INSERTION 1000000
@@ -12,6 +13,7 @@ void* insert() {
     for (int i = 0; i < MAX_INSERTION; i ++) {
         Hash_Insert(hash, "test", i);
     }
+    return 0;
 }
 
 int main() {
@@ -25,14 +27,14 @@ int main() {
         unsigned int diff;
         gettimeofday(&start, NULL);
         for (int j = 0; j < i; j ++) {
-            int temp = pthread_create(&threads[j], NULL, insert, NULL);
+            pthread_create(&threads[j], NULL, insert, NULL);
         }
         for (int j = 0; j < i; j ++) {
             pthread_join(threads[j], NULL);
         }
         gettimeofday(&end, NULL);
         diff = 1000000 * (end.tv_sec-start.tv_sec) + end.tv_usec-start.tv_usec;
-        printf("%d, %ld, %d\n", i, diff, Hash_GetSize(hash));
+        printf("%d, %u, %d\n", i, diff, Hash_GetSize(hash));
         Hash_Free(hash);
     }
 }

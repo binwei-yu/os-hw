@@ -16,7 +16,7 @@ void Counter_Init(counter_t* c, int value) {
 
 // Get the current value of a given counter.
 int Counter_GetValue(counter_t* c) {
-    if (!c) return NULL;
+    if (!c) return 0;
     int result = 0;
     for (int i = 0; i < BUCKET_NUMBER; i ++) {
         spinlock_acquire(c->buckets[i]->lock);
@@ -57,7 +57,7 @@ void Counter_Free(counter_t* c) {
 
 // Hash Function
 unsigned int hash() {
-    unsigned int x = pthread_self();
+    unsigned int x = (unsigned int)pthread_self();
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = (x >> 16) ^ x;

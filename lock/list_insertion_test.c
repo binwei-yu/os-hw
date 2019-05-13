@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <sys/time.h>
 #include "list.h"
 
 #define MAX_INSERTION 1000000
@@ -11,6 +12,7 @@ void* insert() {
     for (int i = 0; i < MAX_INSERTION; i ++) {
         List_Insert(list, "test", i);
     }
+    return 0;
 }
 
 int main() {
@@ -24,7 +26,7 @@ int main() {
         unsigned long diff;
         gettimeofday(&start, NULL);
         for (int j = 0; j < i; j ++) {
-            int temp = pthread_create(&threads[j], NULL, insert, NULL);
+            pthread_create(&threads[j], NULL, insert, NULL);
         }
         for (int j = 0; j < i; j ++) {
             pthread_join(threads[j], NULL);
