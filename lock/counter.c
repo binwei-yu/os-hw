@@ -9,7 +9,7 @@ void Counter_Init(counter_t* c, int value) {
     for (int i = 0; i < BUCKET_NUMBER; i ++) {
         c->buckets[i] = (bucket_t*) malloc(sizeof (bucket_t));
         c->buckets[i]->lock = (spinlock_t*) malloc(sizeof (spinlock_t));
-        spinlock_init(c->buckets[i]->lock)
+        spinlock_init(c->buckets[i]->lock);
         c->buckets[i]->count = i == 0 ? value : 0;
     }
 }
