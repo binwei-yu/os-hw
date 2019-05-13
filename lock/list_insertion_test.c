@@ -14,7 +14,7 @@ void* insert() {
 }
 
 int main() {
-    printf("threads, time(ms), length\n");
+    printf("threads, time(us), length\n");
     for (int i = 0; i <= MAX_THREAD; i ++) {
         list = (list_t*) malloc(sizeof (list_t));
         List_Init(list);

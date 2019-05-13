@@ -15,7 +15,7 @@ void* insert() {
 }
 
 int main() {
-    printf("threads, time(ms), size\n");
+    printf("threads, time(us), size\n");
     for (int i = 0; i <= MAX_THREAD; i ++) {
         hash = (hash_t*) malloc(sizeof (hash_t));
         Hash_Init(hash, BUCKET_NUM);

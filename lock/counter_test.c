@@ -15,7 +15,7 @@ void* count() {
 
 
 int main() {
-    printf("threds, time(ms), counted\n");
+    printf("threds, time(us), counted\n");
     for (int i = 0; i <= MAX_THREAD; i ++) {
         c = (counter_t*) malloc(sizeof (counter_t));
         Counter_Init(c, 0);
