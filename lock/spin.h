@@ -1,3 +1,5 @@
+#ifndef SPIN_H
+#define SPIN_H
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -26,10 +28,7 @@ struct spinlock_t {
     unsigned int value;
 };
 
-void spinlock_acquire(spinlock_t* lock) {
-    while(xchg(&lock->value, BUSY));
-}
+void spinlock_acquire(spinlock_t* lock);
+void spinlock_release(spinlock_t* lock);
 
-void spinlock_release(spinlock_t* lock) {
-    lock->value = 0;
-}
+#endif

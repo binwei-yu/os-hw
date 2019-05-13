@@ -1,27 +1,64 @@
-#include <stdio.h>
 #include "counter.h"
 
-void* count();
-counter_t* c;
-int number = 0;
+unsigned int hash();
 
-void* count() {
-    for(int i = 0; i < 10000; i ++) {
-        Counter_Increment(c);
-        number ++;
+// Initialize a given counter to a given value when c is NULL
+void Counter_Init(counter_t* c, int value) {
+    if (!c) return;
+    c->buckets = (bucket_t**) malloc(BUCKET_NUMBER * sizeof (bucket_t*));
+    for (int i = 0; i < BUCKET_NUMBER; i ++) {
+        c->buckets[i] = (bucket_t*) malloc(sizeof (bucket_t));
+        c->buckets[i]->lock = (spinlock_t*) malloc(sizeof (spinlock_t));
+        c->buckets[i]->count = i == 0 ? value : 0;
     }
 }
 
-int main() {
-    c = (counter_t*) malloc(sizeof (counter_t));
-    Counter_Init(c, 0);
-    pthread_t t1;
-    pthread_t t2;
-    pthread_create(&t1, NULL, count, NULL);
-    pthread_create(&t2, NULL, count, NULL);
-    pthread_join(t1, NULL);
-    pthread_join(t2, NULL);
-    printf("%d\n", Counter_GetValue(c)); // This should be 20,000.
-    printf("%d\n", number); // This should be less than 20,000.
-    Counter_Free(c);
+// Get the current value of a given counter.
+int Counter_GetValue(counter_t* c) {
+    if (!c) return NULL;
+    int result = 0;
+    for (int i = 0; i < BUCKET_NUMBER; i ++) {
+        spinlock_acquire(c->buckets[i]->lock);
+        result += c->buckets[i]->count;
+        spinlock_release(c->buckets[i]->lock);
+    }
+    return result;
+}
+
+// Increase a given counter by 1.
+void Counter_Increment(counter_t* c) {
+    if (!c) return;
+    unsigned int index = hash() % BUCKET_NUMBER;
+    spinlock_acquire(c->buckets[index]->lock);
+    c->buckets[index]->count ++;
+    spinlock_release(c->buckets[index]->lock);
+}
+
+// Decrease a given counter by 1.
+void Counter_Decrement(counter_t* c) {
+    if (!c) return;
+    unsigned int index = hash() % BUCKET_NUMBER;
+    spinlock_acquire(c->buckets[index]->lock);
+    c->buckets[index]->count --;
+    spinlock_release(c->buckets[index]->lock);
+}
+
+// Free a counter
+void Counter_Free(counter_t* c) {
+    if (!c) return;
+    for (int i = 0; i < BUCKET_NUMBER; i ++) {
+        free(c->buckets[i]->lock);
+        free(c->buckets[i]);
+    }
+    free(c->buckets);
+    free(c);
+}
+
+// Hash Function
+unsigned int hash() {
+    unsigned int x = pthread_self();
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = (x >> 16) ^ x;
+    return x;
 }
