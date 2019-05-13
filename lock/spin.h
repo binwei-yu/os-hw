@@ -2,7 +2,9 @@
 #define SPIN_H
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 
+#define TEST 1
 #define BUSY 1
 #define IDLE 0
 
@@ -23,11 +25,16 @@ xchg(volatile unsigned int *addr, unsigned int newval)
     return result;
 }
 
+#ifdef TEST
 typedef struct spinlock_t spinlock_t;
 struct spinlock_t {
     unsigned int value;
 };
+#else
+typedef pthread_mutex_t spinlock_t;
+#endif
 
+void spinlock_init(spinlock_t* lock);
 void spinlock_acquire(spinlock_t* lock);
 void spinlock_release(spinlock_t* lock);
 

@@ -4,6 +4,7 @@
 void List_Init(list_t* list) {
     if (!list) return;
     list->lock = (spinlock_t*) malloc(sizeof (spinlock_t));
+    spinlock_init(list->lock);
     list->head = NULL;
     list->length = 0;
 }
@@ -15,7 +16,7 @@ void List_Insert(list_t *list, void *element, unsigned int key) {
     new_node->element = element;
     new_node->next = NULL;
     new_node->lock = (spinlock_t*) malloc(sizeof (spinlock_t));
-    
+    spinlock_init(new_node->lock);
     spinlock_acquire(list->lock);
     new_node->next = list->head;
     list->head = new_node;
